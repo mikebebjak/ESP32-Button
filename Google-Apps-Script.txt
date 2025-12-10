@@ -1,0 +1,35 @@
+function doPost(e) {
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Log");
+
+    if (!sheet) {
+      sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet("Log");
+    }
+
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow(["Start Time", "End Time", "Hours Worked", "Work Accomplished"]);
+    }
+
+    var now = new Date();
+    var lastRow = sheet.getLastRow();
+    var startTime = sheet.getRange(lastRow, 1).getValue();
+    var endTime = sheet.getRange(lastRow, 2).getValue();
+
+    if (startTime && !endTime) {
+      sheet.getRange(lastRow, 2).setValue(now);
+      // Add hours worked formula in column C
+      var formula = '=IF(AND(ISNUMBER(A' + lastRow + '), ISNUMBER(B' + lastRow + ')), (B' + lastRow + ' - A' + lastRow + ') * 24, "")';
+      sheet.getRange(lastRow, 3).setFormula(formula);
+    } else {
+      sheet.appendRow([now, "", "", ""]);
+    }
+
+    return ContentService.createTextOutput("POST received");
+  } catch (err) {
+    return ContentService.createTextOutput("Error: " + err.message);
+  }
+}
+
+function doGet(e) {
+  return ContentService.createTextOutput("Script is active and waiting for POST data.");
+}
